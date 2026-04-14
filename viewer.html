@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OHIF DICOM Viewer - Vetsphere</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ohif/viewer@3.9.0/dist/ohif.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    #root { width: 100%; height: 100%; }
+    body { background: #000; }
+    .ohif-viewer { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@ohif/viewer@3.9.0/dist/ohif.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const config = {
+        routerBasename: '/Vetsphere-viewer/',
+        whiteLabeling: {
+          mode: 'theme',
+          theme: {
+            primary: '#667eea',
+            secondary: '#764ba2'
+          }
+        },
+        extensions: [],
+        dataSources: [
+          {
+            friendlyName: 'dcmjs DICOMweb Server',
+            namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
+            configuration: {
+              name: 'dicomweb',
+              queryOptionsSupported: true,
+              initializeTypeMap: true,
+              baseUrl: 'https://server.dcmjs.org'
+            }
+          }
+        ],
+        enableIframeEmbedding: true
+      };
+      
+      if (window.OHIFViewer) {
+        window.OHIFViewer.installViewer(config, document.getElementById('root'));
+      } else {
+        console.error('OHIF Viewer library not loaded');
+      }
+      
+      window.VetsphereViewerAPI = {
+        loadStudy: function(studyInstanceUID) {
+          if (studyInstanceUID) {
+            window.location.search = '?studyInstanceUIDs=' + encodeURIComponent(studyInstanceUID);
+          }
+        }
+      };
+      
+      window.addEventListener('message', function(event) {
+        if (event.data.type === 'LOAD_STUDY' && event.data.studyInstanceUID) {
+          window.VetsphereViewerAPI.loadStudy(event.data.studyInstanceUID);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
